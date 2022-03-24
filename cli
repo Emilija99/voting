@@ -1,0 +1,4 @@
+docker exec -it secretdev /bin/bash
+cd code
+//quering balance
+secretd query bank balances <address>

@@ -140,16 +140,18 @@ impl Proposal {
 
     pub fn user_already_voted(&self, address: &CanonicalAddr) -> bool {
         self.voters.iter().any(|v| v.address.eq(address))
+      
     }
 
     pub fn add_voter(&mut self, voter: Voter) {
         self.voters.push(voter)
+        
     }
 
     pub fn expired(&self, current_timestamp: u64) -> bool {
         self.expires < current_timestamp
     }
-    pub fn total_amount(&self) -> Uint128 {
+    pub fn total_voting_power(&self) -> Uint128 {
         self.voters
             .iter()
             .map(|v| v.voting_power)
@@ -158,7 +160,7 @@ impl Proposal {
     }
 
     pub fn valid(&self) -> bool {
-        self.total_amount() >= self.quorum
+        self.total_voting_power() >= self.quorum
     }
 
     pub fn passed(&self) -> bool {

@@ -1,13 +1,13 @@
 const accounts = [
   {
     name: 'a',
-    address: 'secret14a4la45v5l9gnspmq7wt5tcwy5dllu20ly4ngl',
-    mnemonic: 'patient close fox banner sauce path soul float napkin wink gloom response oil envelope attack change wrong pumpkin roof author hedgehog load hair girl'
+    address: 'secret1d803jjq909ynkw23um3s6vzeqy8esy8pkgxtaw',
+    mnemonic: 'skate find noodle barely depth pair uncle alert mandate advice video actor undo notice dumb frame bright foil recycle wagon rate pelican beef choice'
   },
   {
     name: 'b',
-    address: 'secret1t3jchcxdnjuuehrt5889es5f7vpwwdjafcx4gz',
-    mnemonic: 'obey section school behind thrive holiday make rural faith curtain flight satisfy next claim style casino skull dad worth analyst bench wood include bonus'
+    address: 'secret1vh30r7hudlxqan2zlss35420rqh8jwfxamnkj6',
+    mnemonic: 'say type rug ancient false timber recipe shaft grab pill cruel seat settle pumpkin mixed horse omit frozen cupboard journey bike use milk when'
   }
 ];
 
