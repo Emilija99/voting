@@ -1,8 +1,8 @@
 use std::convert::TryInto;
 
 use cosmwasm_std::{
-    from_slice, to_vec, Api, BankMsg, CanonicalAddr, Coin, CosmosMsg, Empty,  Extern,
-     HumanAddr, Querier, StdError, StdResult, Storage, Uint128, WasmMsg,Decimal
+    from_slice, to_vec, Api, BankMsg, CanonicalAddr, Coin, CosmosMsg, Decimal, Empty, Extern,
+    HumanAddr, Querier, StdError, StdResult, Storage, Uint128, WasmMsg,
 };
 use cosmwasm_storage::{PrefixedStorage, ReadonlyPrefixedStorage};
 use schemars::JsonSchema;
@@ -15,6 +15,12 @@ use serde::{Deserialize, Serialize};
 use crate::voter::{Vote, Voter};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct DepositInfo {
+    pub amount: Uint128,
+    pub address: CanonicalAddr,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Proposal {
     id: u64,
     title: String,
@@ -25,6 +31,7 @@ pub struct Proposal {
     expires: u64,
     voters: Vec<Voter>,
     pub results_calculated: bool,
+    deposit: DepositInfo,
 }
 
 impl Proposal {
@@ -36,6 +43,7 @@ impl Proposal {
         quorum: Uint128,
         threshold: Decimal,
         expires: u64,
+        deposit: DepositInfo,
     ) -> Self {
         return Self {
             title,
@@ -47,6 +55,7 @@ impl Proposal {
             voters: vec![],
             id,
             results_calculated: false,
+            deposit,
         };
     }
     pub fn next_id<S: Storage, A: Api, Q: Querier>(
@@ -65,6 +74,7 @@ impl Proposal {
         quorum: Uint128,
         threshold: Decimal,
         expires: u64,
+        deposit: DepositInfo,
     ) -> Result<(), StdError> {
         let proposal = Self::new(
             Self::next_id(deps)?,
@@ -74,6 +84,7 @@ impl Proposal {
             quorum,
             threshold,
             expires,
+            deposit,
         );
         let mut store = PrefixedStorage::new(b"/proposals/", &mut deps.storage);
         let mut a_store = AppendStoreMut::<Proposal, _, _>::attach_or_create_with_serialization(
@@ -157,7 +168,8 @@ impl Proposal {
             .filter(|v| v.vote.ne(&Vote::Abstain))
             .map(|v| v.voting_power)
             .reduce(|a, b| a + b)
-            .unwrap().u128();
+            .unwrap()
+            .u128();
         let yes_votes = self
             .voters
             .iter()
@@ -166,10 +178,10 @@ impl Proposal {
             .reduce(|a, b| a + b)
             .unwrap()
             .u128();
-      
-        let d=Decimal::from_ratio(yes_votes, total_votes);
-       
-        if d>self.threshold {
+
+        let d = Decimal::from_ratio(yes_votes, total_votes);
+
+        if d > self.threshold {
             true
         } else {
             false
@@ -182,16 +194,23 @@ impl Proposal {
     ) -> StdResult<Vec<CosmosMsg<Empty>>> {
         let mut messages: Vec<CosmosMsg<Empty>> = vec![];
         for voter in self.voters.iter() {
-            let message: CosmosMsg<Empty> = CosmosMsg::Bank(BankMsg::Send {
+            messages.push(CosmosMsg::Bank(BankMsg::Send {
                 from_address: contract_addr.clone(),
                 to_address: deps.api.human_address(&voter.address)?,
                 amount: vec![Coin {
                     denom: "uscrt".to_string(),
                     amount: voter.voting_power,
                 }],
-            });
-            messages.push(message);
+            }));
         }
+        messages.push(CosmosMsg::Bank(BankMsg::Send {
+            from_address: contract_addr,
+            to_address: deps.api.human_address(&self.deposit.address)?,
+            amount: vec![Coin {
+                denom: "uscrt".to_string(),
+                amount: self.deposit.amount,
+            }],
+        }));
         Ok(messages)
     }
     pub fn proposal_messages(&self) -> Vec<CosmosMsg<Empty>> {

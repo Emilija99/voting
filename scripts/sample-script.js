@@ -43,6 +43,7 @@ async function run () {
   //query proposals
   const proposals1=await contract.query.proposals({page_num:1,page_size:5});
   console.log(proposals1[0].voters[0]);
+  console.log(proposals1[0].deposit);
 
  /* const deploy_response = await contract.deploy(
     contract_owner,

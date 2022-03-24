@@ -6,7 +6,7 @@ use cosmwasm_std::{
 };
 
 use crate::msg::{HandleMsg, InitMsg, QueryMsg};
-use crate::proposal::Proposal;
+use crate::proposal::{Proposal, DepositInfo};
 use crate::state::{config,  State};
 use crate::voter::{Vote, Voter};
 
@@ -85,7 +85,8 @@ pub fn try_create<S: Storage, A: Api, Q: Querier>(
     threshold: Decimal,
     expires: u64,
 ) -> StdResult<HandleResponse> {
-    if calculate_amount(env.message.sent_funds) < State::get_min_deposit(deps)? {
+    let deposit_amount=calculate_amount(env.message.sent_funds);
+    if deposit_amount < State::get_min_deposit(deps)? {
         return Err(StdError::generic_err("Deposit not big enough"));
     }
     Proposal::create(
@@ -96,6 +97,10 @@ pub fn try_create<S: Storage, A: Api, Q: Querier>(
         quorum,
         threshold,
         expires,
+        DepositInfo{
+            amount: deposit_amount,
+            address:deps.api.canonical_address(&env.message.sender)?,
+        }
     )?;
     Ok(HandleResponse::default())
 }
