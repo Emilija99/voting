@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryMsg",
+  "anyOf": [
+    {
+      "type": "object",
+      "required": [
+        "proposals"
+      ],
+      "properties": {
+        "proposals": {
+          "type": "object",
+          "required": [
+            "page_num",
+            "page_size"
+          ],
+          "properties": {
+            "page_num": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "page_size": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    }
+  ]
+}
