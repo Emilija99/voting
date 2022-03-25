@@ -181,9 +181,9 @@ impl Proposal {
             .unwrap()
             .u128();
 
-        let d = Decimal::from_ratio(yes_votes, total_votes);
+        let votes_ratio = Decimal::from_ratio(yes_votes, total_votes);
 
-        if d > self.threshold {
+        if votes_ratio > self.threshold {
             true
         } else {
             false
@@ -195,6 +195,7 @@ impl Proposal {
         deps: &Extern<S, A, Q>,
     ) -> StdResult<Vec<CosmosMsg<Empty>>> {
         let mut messages: Vec<CosmosMsg<Empty>> = vec![];
+        //returning coins to voters
         for voter in self.voters.iter() {
             messages.push(CosmosMsg::Bank(BankMsg::Send {
                 from_address: contract_addr.clone(),
@@ -205,6 +206,7 @@ impl Proposal {
                 }],
             }));
         }
+        //returning deposit to proposal creator
         messages.push(CosmosMsg::Bank(BankMsg::Send {
             from_address: contract_addr,
             to_address: deps.api.human_address(&self.deposit.address)?,
